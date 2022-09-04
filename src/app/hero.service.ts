@@ -11,20 +11,43 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class HeroService {
 	getHeroes(): Observable<Hero[]> {
-		return this.http
-			.get<Hero[]>(this.heroesUrl)
-			.pipe(
-				tap(_ => this.log('fetching heroes')),
-				catchError(this.handlError<Hero[]>('getHeroes', []))
-			);
+		return this.http.get<Hero[]>(this.heroesUrl).pipe(
+			tap((_) => this.log('fetching heroes')),
+			catchError(this.handlError<Hero[]>('getHeroes', []))
+		);
 	}
 	getHero(id: number): Observable<Hero> {
 		const url = `${this.heroesUrl}/${id}`;
 		return this.http.get<Hero>(url).pipe(
-			tap(_ => this.log(`fetching hero id=${id}`)),
+			tap((_) => this.log(`fetching hero id=${id}`)),
 			catchError(this.handlError<Hero>(`getHero id=${id}`))
-		)
+		);
 	}
+
+	// Put Hero to Update Service
+	httpOptions = {
+		headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+	};
+
+	updateHero(hero: Hero): Observable<any> {
+		return this.http.put(this.heroesUrl, hero, this.httpOptions).pipe(
+			tap((_) => this.log(`update hero with id: ${hero.id}`)),
+			catchError(this.handlError<any>(`Update Hero`))
+		);
+	}
+
+	//Post new Hero
+	addHero(hero: Hero): Observable<Hero> {
+		return this.http
+			.post<Hero>(this.heroesUrl, hero, this.httpOptions)
+			.pipe(
+				tap((newHero: Hero) =>
+					this.log(`added hero w/ id=${newHero.id}`)
+				),
+				catchError(this.handlError<Hero>(`addHero`))
+			);
+	}
+
 	private log(message: string) {
 		this.messageService.add(`HeroService: ${message}`);
 	}
